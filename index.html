@@ -142,33 +142,60 @@ function restart(){
  document.getElementById("result").classList.add("hidden");document.getElementById("start").classList.remove("hidden");
  document.getElementById("name").value="";
 }
-async function saveImage(){
+function saveImage(){
  const W=1200, labelW=170, tileW=104, tileH=118, pad=24, header=100, rowH=145;
- const c=document.createElement("canvas"); c.width=W; c.height=header+tiers.length*rowH+pad;
- const ctx=c.getContext("2d");ctx.fillStyle="#171514";ctx.fillRect(0,0,W,c.height);
- ctx.fillStyle="#fff";ctx.font="bold 36px Arial";ctx.fillText(state.name+"s Video Game Tierlist",pad,48);
- ctx.fillStyle="#aaa19b";ctx.font="18px Arial";ctx.fillText("62 Spiele • persönliche Rangliste",pad,78);
+ const c=document.createElement("canvas");
+ c.width=W; c.height=header+tiers.length*rowH+pad;
+ const ctx=c.getContext("2d");
+ ctx.fillStyle="#171514"; ctx.fillRect(0,0,W,c.height);
+ ctx.fillStyle="#fff"; ctx.font="bold 36px Arial";
+ ctx.fillText(state.name+"s Video Game Tierlist",pad,48);
+ ctx.fillStyle="#aaa19b"; ctx.font="18px Arial";
+ ctx.fillText("62 Spiele • persönliche Rangliste",pad,78);
+
  for(let i=0;i<tiers.length;i++){
-  const t=tiers[i], y=header+i*rowH;
-  ctx.fillStyle=colors[t];ctx.fillRect(0,y,labelW,rowH-3);
-  ctx.fillStyle=(t==="GOAT"||t==="E")?"#fff":"#111";ctx.font="bold 23px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(t,labelW/2,y+(rowH-3)/2);ctx.textAlign="left";
-  let x=labelW+10;
-  const selected=games.filter(g=>state.votes[g.id]===t);
-  for(const g of selected){
-    ctx.fillStyle="#111";ctx.fillRect(x,y+10,tileW-8,tileH-8);
-    const img=new Image(); img.src=g.image;
-    await new Promise(r=>{img.onload=()=>r();img.onerror=()=>r()});
-    try{ctx.drawImage(img,x,y+10,tileW-8,76)}catch(e){}
-    ctx.fillStyle="#fff";ctx.font="bold 12px Arial";
-    const words=g.title.split(" "); let line="", yy=y+100;
-    for(const w of words){const test=line?line+" "+w:w;if(ctx.measureText(test).width>tileW-20){ctx.fillText(line,x+5,yy);yy+=14;line=w}else line=test}
-    if(line)ctx.fillText(line,x+5,yy);
-    x+=tileW;
-    if(x+tileW>W){x=labelW+10}
-  }
+   const t=tiers[i], y=header+i*rowH;
+   ctx.fillStyle=colors[t]; ctx.fillRect(0,y,labelW,rowH-3);
+   ctx.fillStyle=(t==="GOAT"||t==="E")?"#fff":"#111";
+   ctx.font="bold 23px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle";
+   ctx.fillText(t,labelW/2,y+(rowH-3)/2);
+   ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+   let x=labelW+10;
+   const selected=games.filter(g=>state.votes[g.id]===t);
+
+   for(const g of selected){
+     if(x+tileW>W){ x=labelW+10; }
+     ctx.fillStyle="#111"; ctx.fillRect(x,y+10,tileW-8,tileH-8);
+
+     // Die Cover sind bereits auf der Seite geladen.
+     const img=document.querySelector(`.tile img[alt="${CSS.escape(g.title)}"]`);
+     if(img && img.complete && img.naturalWidth){
+       try { ctx.drawImage(img,x,y+10,tileW-8,76); } catch(e) {}
+     }
+
+     ctx.fillStyle="#fff"; ctx.font="bold 12px Arial";
+     const words=g.title.split(" ");
+     let line="", yy=y+100;
+     for(const w of words){
+       const test=line?line+" "+w:w;
+       if(ctx.measureText(test).width>tileW-20){
+         ctx.fillText(line,x+5,yy); yy+=14; line=w;
+       } else line=test;
+     }
+     if(line) ctx.fillText(line,x+5,yy);
+     x+=tileW;
+   }
  }
- const a=document.createElement("a");a.download=state.name+"-Video-Game-Tierlist.png";a.href=c.toDataURL("image/png");a.click();
+
+ const filename=state.name.replace(/[\\/:*?"<>|]/g,"_")+"-Video-Game-Tierlist.png";
+ c.toBlob(blob=>{
+   if(!blob){ alert("Das Bild konnte nicht erstellt werden. Bitte erneut versuchen."); return; }
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement("a");
+   a.href=url; a.download=filename;
+   document.body.appendChild(a); a.click(); a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),5000);
+ }, "image/png");
 }
 </script>
 </body>
