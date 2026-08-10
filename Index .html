@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Video Game Tierlist</title>
+<style>
+:root{--bg:#171514;--panel:#24211f;--panel2:#2b2724;--line:#171717;--text:#f5eee8;--muted:#aaa19b;--accent:#d77a00}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input{font:inherit} button{cursor:pointer} .hidden{display:none!important}
+.start{min-height:100vh;display:grid;place-items:center;padding:18px}
+.card{width:min(620px,100%);background:var(--panel);border:1px solid #3b3531;border-radius:22px;padding:28px;box-shadow:0 20px 60px #0008}
+h1{font-size:34px;text-align:center;margin:0 0 8px} .sub{text-align:center;color:var(--muted);line-height:1.5}
+label{display:block;font-weight:800;margin:22px 0 8px} input{width:100%;padding:15px 16px;border-radius:12px;border:1px solid #4a4541;background:#121110;color:#fff;outline:none}
+input:focus{border-color:var(--accent)} .primary,.action{border:0;border-radius:12px;padding:14px 18px;font-weight:900;background:var(--accent);color:#fff}
+.primary{width:100%;margin-top:14px} .error{color:#ff8076;text-align:center;margin-top:9px;font-size:14px}
+.top{position:sticky;top:0;z-index:20;background:#151311ee;backdrop-filter:blur(12px);border-bottom:1px solid #37322f;padding:12px 14px}
+.topin{max-width:900px;margin:auto;display:flex;align-items:center;gap:14px} .grow{flex:1}
+.progress{height:7px;background:#3b3633;border-radius:99px;overflow:hidden;margin-top:7px} .progress i{display:block;height:100%;background:var(--accent);width:0}
+.vote{width:min(680px,calc(100% - 20px));margin:20px auto 40px;background:var(--panel);border-radius:22px;padding:18px;text-align:center}
+.num{color:var(--muted);font-size:13px} .gameTitle{font-size:28px;font-weight:900;margin:8px 0 16px}
+.cover{width:min(330px,100%);height:360px;object-fit:contain;background:#111;border-radius:14px;display:block;margin:0 auto 18px;box-shadow:0 10px 30px #0008}
+.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px} .choice{border:0;border-radius:11px;min-height:58px;font-weight:900;color:#111}
+.goat{background:#000;color:#fff} .s{background:#ff4038} .a{background:#ff9c0b} .b{background:#ffc51b} .c{background:#4db450} .d{background:#2795df} .e{background:#4759b7;color:#fff} .trash{background:#9a7565}
+.back{margin-top:14px;border:0;background:transparent;color:#aaa;padding:8px}
+.resultHead{max-width:1100px;margin:auto;padding:22px 12px 12px} .resultHead h2{margin:3px 0 12px;font-size:30px}
+.actions{display:flex;gap:10px;flex-wrap:wrap} .secondary{background:#38332f}
+.tierlist{max-width:1100px;margin:auto;padding:0 8px 40px}
+.row{display:flex;min-height:120px;background:#292522;border-bottom:3px solid var(--line)}
+.label{width:145px;min-width:145px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:23px;font-weight:900;padding:8px;color:#111}
+.games{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:8px;flex:1}
+.tile{width:82px;background:#111;border:1px solid #45403c;border-radius:8px;overflow:hidden;text-align:center}
+.tile img{width:82px;height:74px;object-fit:cover;display:block} .tile span{display:block;font-size:10px;font-weight:800;line-height:1.15;padding:5px 4px;min-height:28px}
+.label.goat{color:#fff} .label.e{color:#fff}
+@media(max-width:600px){
+ .card{padding:22px 17px} h1{font-size:29px} .vote{padding:14px} .gameTitle{font-size:24px}
+ .cover{height:330px} .row{min-height:105px} .label{width:92px;min-width:92px;font-size:17px}
+ .tile,.tile img{width:68px} .tile img{height:61px} .tile span{font-size:9px}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<section id="start" class="start">
+ <div class="card">
+  <h1>🎮 VIDEO GAME TIERLIST</h1>
+  <p class="sub">Bewerte alle 62 Spiele für deine persönliche Tierlist. Jeder Teilnehmer braucht einen Namen.</p>
+  <label for="name">Dein Name</label>
+  <input id="name" maxlength="30" placeholder="z. B. Tresi" autocomplete="name">
+  <div id="error" class="error hidden">Bitte gib deinen Namen ein.</div>
+  <button class="primary" onclick="start()">Tierlist starten →</button>
+ </div>
+</section>
+
+<section id="vote" class="hidden">
+ <div class="top"><div class="topin">
+  <div><strong id="player"></strong><div id="progressText" class="num"></div></div>
+  <div class="grow"><div class="progress"><i id="bar"></i></div></div>
+ </div></div>
+ <main class="vote">
+  <div id="number" class="num"></div>
+  <div id="title" class="gameTitle"></div>
+  <img id="cover" class="cover" alt="">
+  <div class="choices">
+   <button class="choice goat" onclick="rank('GOAT')">GOAT</button>
+   <button class="choice s" onclick="rank('S')">S</button>
+   <button class="choice a" onclick="rank('A')">A</button>
+   <button class="choice b" onclick="rank('B')">B</button>
+   <button class="choice c" onclick="rank('C')">C</button>
+   <button class="choice d" onclick="rank('D')">D</button>
+   <button class="choice e" onclick="rank('E')">E</button>
+   <button class="choice trash" onclick="rank('ABSOLUT TRASH')">ABSOLUT TRASH</button>
+  </div>
+  <button class="back" onclick="back()">← Letzte Bewertung ändern</button>
+ </main>
+</section>
+
+<section id="result" class="hidden">
+ <div class="resultHead">
+  <div class="num">Persönliche Tierlist</div>
+  <h2 id="resultTitle"></h2>
+  <div class="actions">
+   <button class="action" onclick="saveImage()">📸 Als Bild speichern</button>
+   <button class="action secondary" onclick="restart()">Neue Liste</button>
+  </div>
+ </div>
+ <div id="tierlist" class="tierlist"></div>
+</section>
+
+<script>
+const games=[{"id": 1, "title": "Elden Ring", "image": "./01.jpg"}, {"id": 2, "title": "Cyberpunk 2077", "image": "./02.jpg"}, {"id": 3, "title": "Red Dead Redemption", "image": "./03.jpg"}, {"id": 4, "title": "Red Dead Redemption: Undead Nightmare", "image": "./04.jpg"}, {"id": 5, "title": "Plants vs. Zombies", "image": "./05.jpg"}, {"id": 6, "title": "Battlefield 6", "image": "./06.jpg"}, {"id": 7, "title": "Assassin's Creed", "image": "./07.jpg"}, {"id": 8, "title": "Call of Duty 4: Modern Warfare", "image": "./08.jpg"}, {"id": 9, "title": "Grand Theft Auto: Vice City", "image": "./09.jpg"}, {"id": 10, "title": "Dark Souls III", "image": "./10.jpg"}, {"id": 11, "title": "Need for Speed: Carbon", "image": "./11.jpg"}, {"id": 12, "title": "Need for Speed: Payback", "image": "./12.jpg"}, {"id": 13, "title": "Need for Speed: ProStreet", "image": "./13.jpg"}, {"id": 14, "title": "Need for Speed: Unbound", "image": "./14.jpg"}, {"id": 15, "title": "Need for Speed: Rivals", "image": "./15.jpg"}, {"id": 16, "title": "Need for Speed: Most Wanted", "image": "./16.jpg"}, {"id": 17, "title": "Need for Speed: Heat", "image": "./17.jpg"}, {"id": 18, "title": "Until Dawn", "image": "./18.jpg"}, {"id": 19, "title": "Grand Theft Auto IV", "image": "./19.jpg"}, {"id": 20, "title": "Need for Speed: Underground 2", "image": "./20.jpg"}, {"id": 21, "title": "Heavy Rain", "image": "./21.jpg"}, {"id": 22, "title": "Need for Speed: Most Wanted", "image": "./22.jpg"}, {"id": 23, "title": "Need for Speed: Underground", "image": "./23.jpg"}, {"id": 24, "title": "Call of Duty: Black Ops III", "image": "./24.jpg"}, {"id": 25, "title": "Call of Duty: Black Ops Cold War", "image": "./25.jpg"}, {"id": 26, "title": "God of War", "image": "./26.jpg"}, {"id": 27, "title": "God of War II", "image": "./27.jpg"}, {"id": 28, "title": "God of War III", "image": "./28.jpg"}, {"id": 29, "title": "Call of Duty: Black Ops", "image": "./29.jpg"}, {"id": 30, "title": "Call of Duty: Modern Warfare 3", "image": "./30.jpg"}, {"id": 31, "title": "Call of Duty 2", "image": "./31.jpg"}, {"id": 32, "title": "Call of Duty: Black Ops II", "image": "./32.jpg"}, {"id": 33, "title": "Grand Theft Auto V", "image": "./33.jpg"}, {"id": 34, "title": "Grand Theft Auto: San Andreas", "image": "./34.jpg"}, {"id": 35, "title": "Demon's Souls", "image": "./35.jpg"}, {"id": 36, "title": "Detroit: Become Human", "image": "./36.jpg"}, {"id": 37, "title": "Minecraft", "image": "./37.jpg"}, {"id": 38, "title": "The Last of Us", "image": "./38.jpg"}, {"id": 39, "title": "Call of Duty: WWII", "image": "./39.jpg"}, {"id": 40, "title": "Call of Duty: World at War", "image": "./40.jpg"}, {"id": 41, "title": "Call of Duty: Modern Warfare", "image": "./41.jpg"}, {"id": 42, "title": "Assassin's Creed III", "image": "./42.jpg"}, {"id": 43, "title": "Rocket League", "image": "./43.jpg"}, {"id": 44, "title": "Battlefield 1", "image": "./44.jpg"}, {"id": 45, "title": "The Witcher 3: Wild Hunt", "image": "./45.jpg"}, {"id": 46, "title": "Metin2", "image": "./46.jpg"}, {"id": 47, "title": "Counter-Strike", "image": "./47.jpg"}, {"id": 48, "title": "Tom Clancy's Rainbow Six Siege", "image": "./48.jpg"}, {"id": 49, "title": "F.E.A.R. 2: Project Origin", "image": "./49.jpg"}, {"id": 50, "title": "F.E.A.R.", "image": "./50.jpg"}, {"id": 51, "title": "Far Cry 4", "image": "./51.jpg"}, {"id": 52, "title": "Far Cry 5", "image": "./52.jpg"}, {"id": 53, "title": "Far Cry 3", "image": "./53.jpg"}, {"id": 54, "title": "Far Cry 6", "image": "./54.jpg"}, {"id": 55, "title": "Left 4 Dead", "image": "./55.jpg"}, {"id": 56, "title": "Left 4 Dead 2", "image": "./56.jpg"}, {"id": 57, "title": "The Team", "image": "./57.jpg"}, {"id": 58, "title": "Sleeping Dogs", "image": "./58.jpg"}, {"id": 59, "title": "Medal of Honor: Rising Sun", "image": "./59.jpg"}, {"id": 60, "title": "Medal of Honor: Frontline", "image": "./60.jpg"}, {"id": 61, "title": "Medal of Honor: Allied Assault", "image": "./61.jpg"}, {"id": 62, "title": "Medal of Honor: Airborne", "image": "./62.jpg"}];
+const tiers=["GOAT","S","A","B","C","D","E","ABSOLUT TRASH"];
+const colors={"GOAT":"#000","S":"#ff4038","A":"#ff9c0b","B":"#ffc51b","C":"#4db450","D":"#2795df","E":"#4759b7","ABSOLUT TRASH":"#9a7565"};
+let state={name:"",i:0,votes:{},history:[]};
+
+function start(){
+ const n=document.getElementById("name").value.trim();
+ if(!n){document.getElementById("error").classList.remove("hidden");return}
+ state={name:n,i:0,votes:{},history:[]};
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("vote").classList.remove("hidden");
+ document.getElementById("player").textContent=n;
+ show();
+}
+function show(){
+ if(state.i>=games.length){result();return}
+ const g=games[state.i], no=state.i+1;
+ document.getElementById("number").textContent=`Spiel ${no} von ${games.length}`;
+ document.getElementById("progressText").textContent=`${no} / ${games.length}`;
+ document.getElementById("bar").style.width=(state.i/games.length*100)+"%";
+ document.getElementById("title").textContent=g.title;
+ document.getElementById("cover").src=g.image;
+ document.getElementById("cover").alt=g.title;
+}
+function rank(t){
+ const g=games[state.i]; state.votes[g.id]=t; state.history.push({i:state.i,id:g.id,t});
+ state.i++; show();
+}
+function back(){
+ if(!state.history.length)return;
+ const h=state.history.pop(); delete state.votes[h.id]; state.i=h.i; show();
+}
+function result(){
+ document.getElementById("vote").classList.add("hidden");document.getElementById("result").classList.remove("hidden");
+ document.getElementById("resultTitle").textContent=state.name+"s Video Game Tierlist"; render();
+}
+function render(){
+ const root=document.getElementById("tierlist"); root.innerHTML="";
+ tiers.forEach(t=>{
+  const row=document.createElement("div");row.className="row";
+  const lab=document.createElement("div");lab.className="label "+css(t);lab.textContent=t;
+  const box=document.createElement("div");box.className="games";
+  games.filter(g=>state.votes[g.id]===t).forEach(g=>{
+   const tile=document.createElement("div");tile.className="tile";
+   tile.innerHTML=`<img src="${g.image}" alt=""><span>${g.title}</span>`;box.appendChild(tile);
+  });
+  row.append(lab,box);root.appendChild(row);
+ });
+}
+function css(t){return t==="ABSOLUT TRASH"?"trash":t.toLowerCase();}
+function restart(){
+ state={name:"",i:0,votes:{},history:[]};
+ document.getElementById("result").classList.add("hidden");document.getElementById("start").classList.remove("hidden");
+ document.getElementById("name").value="";
+}
+async async function saveImage(){
+  const btn = event && event.currentTarget ? event.currentTarget : null;
+  if(btn){btn.disabled=true;btn.textContent="⏳ Bild wird erstellt…";}
+  try{
+    const target=document.getElementById("tierlist");
+    if(!target) throw new Error("Tierlist nicht gefunden");
+
+    const imgs=[...target.querySelectorAll("img")];
+    await Promise.all(imgs.map(img=>{
+      if(img.complete && img.naturalWidth) return img.decode ? img.decode().catch(()=>{}) : Promise.resolve();
+      return new Promise(resolve=>{
+        img.addEventListener("load",resolve,{once:true});
+        img.addEventListener("error",resolve,{once:true});
+      });
+    }));
+
+    const canvas=await html2canvas(target,{
+      backgroundColor:"#171514",
+      scale:2,
+      useCORS:true,
+      allowTaint:false,
+      imageTimeout:15000,
+      logging:false
+    });
+
+    const title=document.createElement("canvas");
+    const pad=30, head=90;
+    title.width=canvas.width+pad*2;
+    title.height=canvas.height+head+pad;
+    const ctx=title.getContext("2d");
+    ctx.fillStyle="#171514";ctx.fillRect(0,0,title.width,title.height);
+    ctx.fillStyle="#fff";ctx.font="bold 34px Arial";
+    ctx.fillText(state.name+"s Video Game Tierlist",pad,45);
+    ctx.fillStyle="#aaa19b";ctx.font="17px Arial";
+    ctx.fillText("62 Spiele • persönliche Rangliste",pad,72);
+    ctx.drawImage(canvas,pad,head);
+
+    title.toBlob(async blob=>{
+      if(!blob) throw new Error("PNG konnte nicht erstellt werden.");
+
+      const filename=state.name.replace(/[\\/:*?"<>|]/g,"_")+"-Video-Game-Tierlist.png";
+      const file=new File([blob],filename,{type:"image/png"});
+
+      // iPhone/iPad: native share sheet. From there the user can choose
+      // "Bild sichern" / "In Fotos sichern" or send it directly to WhatsApp.
+      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+        await navigator.share({
+          files:[file],
+          title:state.name+"s Video Game Tierlist",
+          text:"Meine Video-Game-Tierlist"
+        });
+      }else{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url;a.download=filename;
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),10000);
+      }
+    },"image/png");
+  }catch(e){
+    if(e && e.name==="AbortError") return;
+    console.error(e);
+    alert("Das Bild konnte nicht erstellt oder geteilt werden. Bitte erneut versuchen.");
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="📸 Als Bild speichern";}
+  }
+}
+</script>
+</body>
+</html>
